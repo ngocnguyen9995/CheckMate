@@ -2,7 +2,7 @@ import java.util.*;
 import java.io.*;
 import java.net.*;
 
-public class Client extends Host{
+public class Client extends Host {
 
     public SocketManager socketManager;
     public GameManager gameManager;
@@ -22,6 +22,16 @@ public class Client extends Host{
     }
 
     @Override
+    public void quit() {
+        try {
+            System.out.println("You choose to quit the game. Back to main menu.")
+            client.close();
+        } catch(IOException e) {
+            System.out.println(e.getStackTrace());
+        }
+    }
+
+    @Override
     public void playGame() {
         gameManager = new GameManager();
         initSession();
@@ -33,7 +43,7 @@ public class Client extends Host{
 
         }
 
-        while(!quit()) {
+        while(!gameOver()) {
             if(!socketManager.waitForMessage()) {
                 System.out.println("Can't receive message");
             }

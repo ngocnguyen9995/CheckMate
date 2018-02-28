@@ -43,14 +43,13 @@ public class Host {
 
                 gameManager.isHost = true;
 
-                // if move is valid, then process, else, get a new piece, back to while
                 if (gameManager.validatePiece(row, col)) {
                     System.out.print("Choose a position to move: ");
                     String position = sc.nextLine();
 
                     pieces = gameManager.checkInput(position);
 
-                    if(pieces.length == 0);
+                    if(pieces.length == 2) {
 
                         int newRow = pieces[0];
                         int newCol = pieces[1];
@@ -66,10 +65,16 @@ public class Host {
                             System.out.println("Invalid position. Please choose again");
                         }
                     }
+                    else {
+                        System.out.println("Invalid format of input. Please choose again");
+                    }
                 }
                 else{
                     System.out.println("Invalid piece. Please choose again");
                 }
+            }
+            else {
+                System.out.println("Invalid format of input. Please choose again");
             }
         }
     }
@@ -86,14 +91,18 @@ public class Host {
 
             doTurn();
             while(!gameOver()) {
-                if(!socketManager.sendMessage())
+
+                if(!socketManager.sendMessage()) {
                     System.out.println("Can't send message");
+                    break;
+                }
                 else {
                     out.writeUTF(GameManager.displayBoard());
                 }
 
                 if(!socketManager.waitForMessage()) {
                     System.out.println("Can't receive message");
+                    break;
                 }
                 else {
                     try {
