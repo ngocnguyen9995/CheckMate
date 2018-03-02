@@ -14,7 +14,7 @@ import java.util.*;
 
 public class SocketManager {
 
-    protected boolean connectStatus;
+    protected static boolean connectStatus = false;
 
     public static boolean isInt(String str) {
         Scanner scan = new Scanner(str.trim());
@@ -37,6 +37,7 @@ public class SocketManager {
         Socket server = null;
         try {
             server = serverSocket.accept();
+            connectStatus = true;
         } catch(SocketTimeoutException e) {
             System.out.println("Connection to server timed out");
             // prompt user if they want to wait or return to main menu
