@@ -13,13 +13,13 @@ public class Host {
     public void initSession() {
         socketManager = new SocketManager();
         gameManager = new GameManager();
-        serverSocket = socketManager.initServer(); //initServer() must return a ServerSocket
-        server = socketManager.listen();
+        serverSocket = socketManager.initServer(8080); //initServer() must return a ServerSocket
+        server = socketManager.listen(serverSocket);
     }
 
     public void quit() {
         try {
-            System.out.println("You choose to quit the game. Back to main menu.")
+            System.out.println("You choose to quit the game. Back to main menu.");
             server.close();
         } catch(IOException e) {
             System.out.println(e.getStackTrace());
@@ -85,38 +85,15 @@ public class Host {
         initSession();
 
         try {
-            ObjectInputStream in = new ObjectInputStream(server.getInputStream());
-            ObjectOutputStream out = new ObjectOutputStream(server.getOutputStream());
-
-
             doTurn();
-            while(!gameOver()) {
-
-                if(!socketManager.sendMessage()) {
+            while(!gameManager.gameOver()) {
+                if(!socketManager.sendMessage(server, board))
                     System.out.println("Can't send message");
-                    break;
-                }
-                else {
-                    out.writeUTF(GameManager.displayBoard());
-                }
 
-                if(!socketManager.waitForMessage()) {
-                    System.out.println("Can't receive message");
-                    break;
-                }
-                else {
-                    try {
-                        if( (board = (GameBoard) in.readUTF()) != null ) {
+                board = (GameBoard) socketManager.waitForMessage(server));
 
-                            //update board in game manager here
-                        }
-                    } catch(ClassNotFoundException e) {
-                        System.out.println(e.getStackTrace());
-                    } catch(IOException e) {
-                        System.out.println(e.getStackTrace());
-                    }
-
-                }
+                if(board == null)
+                    System.out.println("Can't read message");
             }
         } catch(IOException e) {
             System.out.println(e.getStackTrace());
