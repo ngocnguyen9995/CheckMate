@@ -13,8 +13,13 @@ public class Host {
     public void initSession() {
         socketManager = new SocketManager();
         gameManager = new GameManager();
-        serverSocket = socketManager.initServer(8080); //initServer() must return a ServerSocket
-        server = socketManager.listen(serverSocket);
+
+        try {
+            serverSocket = socketManager.initServer(7896);
+            server = socketManager.listen(serverSocket);
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void quit() {
@@ -29,6 +34,8 @@ public class Host {
     public void doTurn() {
         int[] pieces;
 
+        board.displayBoard();
+
         while(true) {
             System.out.print("Choose a piece: ");
             Scanner sc = new Scanner(System.in);
@@ -40,21 +47,44 @@ public class Host {
 
                 int row = pieces[0];
                 int col = pieces[1];
+                int newRow, newCol;
 
                 gameManager.isHost = true;
 
-                if (gameManager.validatePiece(row, col)) {
-                    System.out.print("Choose a position to move: ");
+                if(gameManager.canJump(row, col)) {
+                    while (true) {
+                        System.out.print("Choose a new position to jump: ");
+                        input = sc.nextLine();
+                        pieces = gameManager.checkInput(input);
+
+                        if (pieces.length == 2) {
+                            newRow = pieces[0];
+                            newCol = pieces[1];
+
+                            if (gameManager.validateMove(row, col, newRow, newCol)) {
+
+                                board = gameManager.jump(row, col, newRow, newCol);
+                            } else {
+                                System.out.println("Invalid position. Please choose again");
+                            }
+                        } else {
+                            System.out.println("Invalid format of input. Please choose again");
+                        }
+                    }
+                }
+
+                else if (gameManager.validatePiece(row, col)) {
+                    System.out.print("Choose a position to move into: ");
                     String position = sc.nextLine();
 
                     pieces = gameManager.checkInput(position);
 
                     if(pieces.length == 2) {
 
-                        int newRow = pieces[0];
-                        int newCol = pieces[1];
+                        newRow = pieces[0];
+                        newCol = pieces[1];
 
-                        if (gameManager.validateMove(newRow, newCol)) {
+                        if (gameManager.validateMove(row, col, newRow, newCol)) {
 
                             board = gameManager.updateBoard(row, col, newRow, newCol);
 
@@ -82,21 +112,26 @@ public class Host {
     public void playGame() {
 
         gameManager = new GameManager();
+        board = gameManager.getBoard();
         initSession();
 
-        try {
-            doTurn();
-            while(!gameManager.gameOver()) {
-                if(!socketManager.sendMessage(server, board))
-                    System.out.println("Can't send message");
+        doTurn();
+        while(!gameManager.gameOver()) {
 
-                board = (GameBoard) socketManager.waitForMessage(server));
+            // send board
+            socketManager.sendMessage(server, board);
 
-                if(board == null)
-                    System.out.println("Can't read message");
+            // read board
+            board = (GameBoard) socketManager.waitForMessage(server);
+
+            if(board == null) {
+                System.out.println("Can't read message");
+                break;
             }
-        } catch(IOException e) {
-            System.out.println(e.getStackTrace());
+
+            gameManager.readBoard(board);
+            doTurn();
         }
+
     }
 }

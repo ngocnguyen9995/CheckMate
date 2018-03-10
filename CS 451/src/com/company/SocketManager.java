@@ -7,7 +7,6 @@
  * Kyle Eng
  */
 
-package com.company;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -25,7 +24,7 @@ public class SocketManager {
 
     public ServerSocket initServer(int port) throws IOException{
         ServerSocket serverSocket = new ServerSocket(port);
-        serverSocket.setSoTimeout(10000);
+        serverSocket.setSoTimeout(100000000);
         return serverSocket;
     }
 
@@ -71,9 +70,8 @@ public class SocketManager {
         return server;
     }
 
-    public boolean connect(String ipAddress, ServerSocket serverSocket, Socket socket) throws IOException{
+    public boolean connect(String ipAddress, int port, Socket socket) throws IOException{
         InetAddress ipAddr = InetAddress.getByName(ipAddress);
-        int port = serverSocket.getLocalPort();
         SocketAddress socketAddr = new InetSocketAddress(ipAddr, port);
         socket.connect(socketAddr);
         return (socket.isConnected());
@@ -83,7 +81,7 @@ public class SocketManager {
         try {
             ObjectOutputStream out = new ObjectOutputStream(toSock.getOutputStream());
             out.writeObject(message);
-            out.close();
+            //out.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -95,7 +93,7 @@ public class SocketManager {
         try {
             ObjectInputStream inputStream = new ObjectInputStream(inSock.getInputStream());
             message = inputStream.readObject();
-            inputStream.close();
+            //inputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {

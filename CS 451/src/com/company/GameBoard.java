@@ -1,5 +1,6 @@
+import java.io.Serializable;
 
-public class GameBoard
+public class GameBoard implements Serializable
 {
     public final static int ROW = 8;
     public final static int COL = 8;
@@ -91,8 +92,8 @@ public class GameBoard
         out += "  ---------------------------------\n";
         System.out.println("  ---------------------------------");
 
-        out += "    h   g   f   e   d   c   b   a ";
-        System.out.println("    h   g   f   e   d   c   b   a ");
+        out += "    a   b   c   d   e   f   g   h ";
+        System.out.println("    a   b   c   d   e   f   g   h ");
         return out;
     }
 

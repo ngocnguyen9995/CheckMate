@@ -1,4 +1,3 @@
-import java.util.*;
 
 public class GameManager
 {
@@ -12,6 +11,11 @@ public class GameManager
     public GameManager()
     {
         gameBoard = new GameBoard();
+    }
+
+    public GameBoard getBoard()
+    {
+        return gameBoard;
     }
 
     // read board fetched from socket
@@ -35,7 +39,8 @@ public class GameManager
 
             if ( col < 97 || col > 104 )
                 return temp;
-            if ( row < 1 || row > 8 )
+
+            if ( Integer.parseInt(String.valueOf(row)) < 1 || Integer.parseInt(String.valueOf(row)) > 8 )
                 return temp;
 
             temp[0] = Integer.parseInt(String.valueOf(row)) - 1; // - 1 since the actual array index is off by 1
@@ -100,6 +105,11 @@ public class GameManager
             return true;
         else if ( ! isHost && ! isX(row, col))
             return true;
+        else if ( ! isOccupied(row, col) )
+        {
+            System.out.println("No piece at the choosen position. Please try again");
+            return false;
+        }
         else
         {
             System.out.println("You can't move a piece that is not yours. Please try again");
@@ -157,7 +167,6 @@ public class GameManager
                 && !isOccupied(newRow, newCol) && isOccupied(prevRow, prevCol))
         {
             searchKing();
-
             if (isKing(prevRow, prevCol))
             {
                 if ( moveLeftUp(prevRow, prevCol, newRow, newCol) || moveRightUp(prevRow, prevCol, newRow, newCol) ||
@@ -298,7 +307,7 @@ public class GameManager
         return false;
     }
 
-    public boolean jump(int row, int col, int newRow, int newCol)
+    public GameBoard jump(int row, int col, int newRow, int newCol)
     {
         boolean isUpdated = false;
 
@@ -339,22 +348,26 @@ public class GameManager
             }
         }
 
+        posUpLeft = new int[4];
+        posUpRight = new int[4];
+        posDownLeft = new int[4];
+        posDownRight = new int[4];
+
         if ( isUpdated )
         {
             if (isX(row, col))
                 gameBoard.reduceCount("X");
             else
                 gameBoard.reduceCount("O");
-            return true;
+            return gameBoard;
         }
-        System.out.println("Invalid jump!");
-        return false;
+        return gameBoard;
 
     }
 
 /***********************************************************************************************************************/
 
- public GameBoard updateBoard(int prevRow, int prevCol, int newRow, int newCol)
+    public GameBoard updateBoard(int prevRow, int prevCol, int newRow, int newCol)
     {
         gameBoard.movePiece(prevRow, prevCol, newRow, newCol);
         gameBoard.displayBoard();

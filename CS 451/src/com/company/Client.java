@@ -39,25 +39,85 @@ public class Client extends Host {
     }
 
     @Override
+    public void doTurn() {
+        int[] pieces;
+
+        board.displayBoard();
+
+        while(true) {
+            System.out.print("Choose a piece: ");
+            Scanner sc = new Scanner(System.in);
+            String input = sc.nextLine();
+
+            pieces = gameManager.checkInput(input);
+
+            if (pieces.length == 2) {
+
+                int row = pieces[0];
+                int col = pieces[1];
+
+                gameManager.isHost = false;
+
+                if (gameManager.validatePiece(row, col)) {
+                    System.out.print("Choose a position to move: ");
+                    String position = sc.nextLine();
+
+                    pieces = gameManager.checkInput(position);
+
+                    if(pieces.length == 2) {
+
+                        int newRow = pieces[0];
+                        int newCol = pieces[1];
+
+                        if (gameManager.validateMove(row, col, newRow, newCol)) {
+
+                            board = gameManager.updateBoard(row, col, newRow, newCol);
+
+                            gameManager.isHost = false;
+                            break;
+                        }
+                        else {
+                            System.out.println("Invalid position. Please choose again");
+                        }
+                    }
+                    else {
+                        System.out.println("Invalid format of input. Please choose again");
+                    }
+                }
+                else{
+                    System.out.println("Invalid piece. Please choose again");
+                }
+            }
+            else {
+                System.out.println("Invalid format of input. Please choose again");
+            }
+        }
+    }
+
+    @Override
     public void playGame() {
         gameManager = new GameManager();
+        board = gameManager.getBoard();
         initSession();
 
-        try {
-            while(!gameManager.gameOver()) {
+        board.displayBoard();
+        while(!gameManager.gameOver()) {
 
-                board = (GameBoard) socketManager.waitForMessage(client));
+            // read board
+            board = (GameBoard) socketManager.waitForMessage(client);
 
-                if(board == null)
-                    System.out.println("Can't read message");
-
-                doTurn();
-
-                if(!socketManager.sendMessage(client, board))
-                    System.out.println("Can't send message");
+            if(board == null) {
+                System.out.println("Can't read message");
+                break;
             }
-        } catch(IOException e) {
-            System.out.println(e.getStackTrace());
+
+            System.out.println("\nHost moved.");
+            gameManager.readBoard(board);
+
+            doTurn();
+            // send board
+            socketManager.sendMessage(client, board);
         }
+
     }
 }
