@@ -3,6 +3,8 @@ import java.util.*;
 import java.io.*;
 import java.net.*;
 
+
+
 public class Client extends Host {
 
     private SocketManager socketManager;
@@ -32,7 +34,6 @@ public class Client extends Host {
     @Override
     public void quit() {
         try {
-            System.out.println("You choose to quit the game. Back to main menu.");
             client.close();
         } catch(IOException e) {
             System.out.println(e.getStackTrace());
@@ -48,9 +49,9 @@ public class Client extends Host {
         String input, position;
         gameManager.isHost = false;
 
-        board.displayBoard();
 
         while(true) {
+            System.out.println("");
             // jump
             if(gameManager.searchJump()) { //searchJump return true if there is jump
 
@@ -124,6 +125,7 @@ public class Client extends Host {
 
                                 gameManager.updateBoard(row, col, newRow, newCol);
                                 board = gameManager.getBoard();
+                                System.out.println("");
                                 gameManager.printPiecesLeft();
                                 break;
                             }
@@ -148,36 +150,88 @@ public class Client extends Host {
 
     @Override
     public void playGame() {
+
         gameManager = new GameManager();
         board = gameManager.getBoard();
         initSession();
 
+        System.out.println("\n***************** Game start *****************\n");
+        System.out.println("You are player 2. Choose \'o\' to move");
+
+        System.out.println("\n**********************************************\n");
+        board.displayBoard();
+        System.out.println("\nPlayer 1 turn. Wait for Player 1.\n");
+
+        // client must wait for server to move first
+        board = (GameBoard) socketManager.waitForMessage(client);
+
+        if (board == null) {
+            System.out.println("Can't read message");
+        }
+
+        // update board
+        gameManager.readBoard(board);
+        board = gameManager.getBoard();
+
+        // print board
+        System.out.println("\n**********************************************\n");
         board.displayBoard();
 
-        while(gameManager.gameOver() != true) {
+        System.out.println("\nPlayer 2 turn.");
+        System.out.println("Choose an option: 1. Make move  2. Quit game");
+        Scanner sc = new Scanner(System.in);
+        int option;
 
-            // read board
-            board = (GameBoard) socketManager.waitForMessage(client);
+        try {
+            option = Integer.parseInt(sc.nextLine());
+            while(true) {
+                if (option == 1) {
 
-            if(board == null) {
-                System.out.println("Can't read message");
-                break;
-            }
+                    if(gameManager.gameOver() != true) {
 
-            System.out.println("\nHost moved.\n");
+                        doTurn();
+                        socketManager.sendMessage(client, board);
 
-            gameManager.readBoard(board);
-            board = gameManager.getBoard();
-            gameManager.printPiecesLeft();
+                        System.out.println("\n******** You moved. Wait for Player 1 ********\n");
 
-            if(gameManager.gameOver() == true) {
-                System.out.println("Game over");
-                break;
-            }
-            else {
-                doTurn();
-                socketManager.sendMessage(client, board);
+                        // read board
+                        board = (GameBoard) socketManager.waitForMessage(client);
+
+                        if(board == null) {
+                            System.out.println("Player 1 exit.\nQuit to main menu");
+                            quit();
+                            break;
+                        }
+
+                        gameManager.readBoard(board);
+                        board = gameManager.getBoard();
+                        board.displayBoard();
+                        gameManager.printPiecesLeft();
+
+                    }
+                    else {
+                        System.out.println("Game over");
+                        break;
+                    }
+                    System.out.println("\nPlayer 2 turn.");
+                    System.out.println("Choose an option: 1. Make move  2. Quit game");
+                    option = Integer.parseInt(sc.nextLine());
+
+                } else if (option == 2) {
+                    System.out.println("You choose to quit the game. Back to main menu.");
+                    quit();
+                    break;
+                }
+                else {
+                    System.out.println("Invalid option.");
+                    System.out.println("Choose an option: 1. Make move  2. Quit game");
+                    option = Integer.parseInt(sc.nextLine());
+                }
             }
         }
+        catch (NumberFormatException e) {
+            e.printStackTrace();
+        }
     }
+
 }

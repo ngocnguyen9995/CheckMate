@@ -71,6 +71,8 @@ public class GameBoard implements Serializable
     // change to return String
     public void displayBoard()
     {
+        System.out.println("");
+        System.out.println("             Game Board            ");
         System.out.println("  ---------------------------------");
         for (int i = 0; i < ROW; i++)
         {

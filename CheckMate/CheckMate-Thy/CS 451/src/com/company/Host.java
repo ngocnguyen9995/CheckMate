@@ -1,16 +1,16 @@
 package com.company;
-
 import java.util.*;
 import java.net.*;
 import java.io.*;
+
 
 
 public class Host {
 
     private SocketManager socketManager;
     private GameManager gameManager;
-    private ServerSocket serverSocket; //create connection
-    private Socket server; //actually connect to it
+    private ServerSocket serverSocket;
+    private Socket server;
     private GameBoard board;
     private int row = 1, col = 1, newRow = 1, newCol = 1;
 
@@ -20,9 +20,8 @@ public class Host {
         InetAddress ip;
         try {
             ip = InetAddress.getLocalHost();
-            serverSocket = socketManager.initServer(7896);
+            serverSocket = socketManager.initServer();
             System.out.println("Your host ip address: " + ip);
-            System.out.println("Your host port number: " + 7896);
             server = socketManager.listen(serverSocket);
         } catch(IOException e) {
             e.printStackTrace();
@@ -31,7 +30,6 @@ public class Host {
 
     public void quit() {
         try {
-            System.out.println("You choose to quit the game. Back to main menu.");
             server.close();
         } catch(IOException e) {
             System.out.println(e.getStackTrace());
@@ -46,10 +44,10 @@ public class Host {
         String input, position;
         gameManager.isHost = true;
 
-        board.displayBoard();
 
         while(true) {
             // jump
+            System.out.println("");
             if(gameManager.searchJump()) { //searchJump return true if there is jump
 
                 System.out.print("Choose a piece to jump: ");
@@ -75,6 +73,7 @@ public class Host {
                                 if (gameManager.jump(row, col, newRow, newCol)) {
 
                                     board = gameManager.getBoard();
+                                    System.out.println("");
                                     gameManager.printPiecesLeft();
                                     row = newRow;
                                     col = newCol;
@@ -123,6 +122,7 @@ public class Host {
 
                                 gameManager.updateBoard(row, col, newRow, newCol);
                                 board = gameManager.getBoard();
+                                System.out.println("");
                                 gameManager.printPiecesLeft();
                                 gameManager.isHost = false;
                                 break;
@@ -153,35 +153,69 @@ public class Host {
         board = gameManager.getBoard();
         initSession();
 
+        System.out.println("\n***************** Game start *****************\n");
+        System.out.println("You are player 1. Choose \'x\' to move.");
 
-        doTurn();
-        socketManager.sendMessage(server, board);
+        System.out.println("\n**********************************************\n");
+        board.displayBoard();
 
-        while(gameManager.gameOver() != true) {
+        System.out.println("\nPlayer 1 turn.");
+        System.out.println("Choose an option: 1. Make move  2. Quit game");
+        Scanner sc = new Scanner(System.in);
+        int option;
 
-            // read board
-            board = (GameBoard) socketManager.waitForMessage(server);
+        try {
+            option = Integer.parseInt(sc.nextLine());
+            while(true) {
+                if (option == 1) {
 
-            if(board == null) {
-                System.out.println("Can't read message");
-                break;
+                    if(gameManager.gameOver() != true) {
+
+                        doTurn();
+                        socketManager.sendMessage(server, board);
+
+                        System.out.println("\n******** You moved. Wait for Player 2 ********\n");
+
+                        // read board
+                        board = (GameBoard) socketManager.waitForMessage(server);
+
+                        if (board == null) {
+                            System.out.println("Player 2 exit.\nQuit to main menu");
+                            quit();
+                            break;
+                        }
+
+                        gameManager.readBoard(board);
+                        board = gameManager.getBoard();
+                        board.displayBoard();
+                        gameManager.printPiecesLeft();
+
+                    }
+                    else {
+                        System.out.println("Game over");
+                        break;
+                    }
+                    System.out.println("\nPlayer 1 turn.");
+                    System.out.println("Choose an option: 1. Make move  2. Quit game");
+                    option = Integer.parseInt(sc.nextLine());
+
+                } else if (option == 2) {
+                    System.out.println("You choose to quit the game. Back to main menu.");
+                    quit();
+                    break;
+                }
+                else {
+                    System.out.println("Invalid option.");
+                    System.out.println("Choose an option: 1. Make move  2. Quit game");
+                    option = Integer.parseInt(sc.nextLine());
+                }
             }
-
-            System.out.println("\nClient moved.\n");
-
-            gameManager.readBoard(board);
-            board = gameManager.getBoard();
-            gameManager.printPiecesLeft();
-
-            if(gameManager.gameOver() == true) {
-                System.out.println("Game over");
-                break;
-            }
-            else {
-                doTurn();
-                socketManager.sendMessage(server, board);
-            }
+        }
+        catch (NumberFormatException e) {
+            e.printStackTrace();
         }
 
     }
+
+
 }

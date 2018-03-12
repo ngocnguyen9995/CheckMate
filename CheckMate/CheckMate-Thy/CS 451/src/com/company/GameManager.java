@@ -372,8 +372,8 @@ public class GameManager
 
     public void printPiecesLeft()
     {
-        System.out.println("Number of pieces left for Host: " + gameBoard.hostPieceCount);
-        System.out.println("Number of pieces left for Client: " + gameBoard.clientPieceCount);
+        System.out.println("Number of pieces left for Player 1: " + gameBoard.hostPieceCount);
+        System.out.println("Number of pieces left for Player 2: " + gameBoard.clientPieceCount);
     }
 
     public boolean gameOver()

@@ -1,5 +1,6 @@
 /*
- * SocketManager.java -
+ * SocketManager.java - Class responsible for managing initialization, listening/connecting between servers,
+ * and sending/receiving messages between sockets.
  *
  * 3/12/18
  *
@@ -8,7 +9,6 @@
  */
 
 package com.company;
-
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -16,6 +16,8 @@ import java.util.*;
 public class SocketManager {
 
     protected static boolean connectStatus = false;
+    private ObjectInputStream inputStream = null;
+    private ObjectOutputStream outputStream = null;
 
     public static boolean isInt(String str) {
         Scanner scan = new Scanner(str.trim());
@@ -24,9 +26,10 @@ public class SocketManager {
         return !scan.hasNext();
     }
 
-    public ServerSocket initServer(int port) throws IOException{
-        ServerSocket serverSocket = new ServerSocket(port);
-        serverSocket.setSoTimeout(100000000);
+    public ServerSocket initServer() throws IOException{
+        ServerSocket serverSocket = new ServerSocket(0);
+        serverSocket.setSoTimeout(20000);
+        System.out.println("Host is listening on port " + serverSocket.getLocalPort());
         return serverSocket;
     }
 
@@ -43,30 +46,27 @@ public class SocketManager {
             System.out.println("Connection to server timed out");
             // prompt user if they want to wait or return to main menu
             // while loop for waiting
-            // return null to return control to main controller
+            // break to return control to main controller
             Scanner scan = new Scanner(System.in);
-            while(true) {
-                System.out.println("Do you wish to continue waiting or go back to main menu?");
-                System.out.println("Enter '1' to continue waiting or '2' to go back to main menu");
-                String userIn = scan.nextLine();
-                while (!isInt(userIn) || (userIn.length() != 1)) {
-                    System.out.println("Please type an integer, 1 or 2");
-                    scan = new Scanner(System.in);
-                    userIn = scan.nextLine();
-                }
-                int userInput = Integer.parseInt(userIn);
 
-                while ((userInput != 1) && (userInput != 2)) {
-                    System.out.println("Please enter '1' or '2' ");
-                    scan = new Scanner(System.in);
-                    userInput = scan.nextInt();
-                }
+            System.out.println("Do you wish to continue waiting or go back to main menu?");
+            System.out.println("Enter '1' to continue waiting or '2' to go back to main menu");
+            String userIn = scan.nextLine();
+            while (!isInt(userIn) || (userIn.length() != 1)) {
+                System.out.println("Please type an integer, 1 or 2");
+                scan = new Scanner(System.in);
+                userIn = scan.nextLine();
+            }
+            int userInput = Integer.parseInt(userIn);
 
-                if (userInput == 1) {
-                    SocketManager.listen(serverSocket);
-                } else {
-                    break;
-                }
+            while ((userInput != 1) && (userInput != 2)) {
+                System.out.println("Please enter '1' or '2' ");
+                scan = new Scanner(System.in);
+                userInput = scan.nextInt();
+            }
+
+            if (userInput == 1) {
+                SocketManager.listen(serverSocket);
             }
         }
         return server;
@@ -79,10 +79,14 @@ public class SocketManager {
         return (socket.isConnected());
     }
 
-    public void sendMessage(Socket toSock, Object message) {
+    public void sendMessage(Socket fromSock, GameBoard message) {
         try {
-            ObjectOutputStream out = new ObjectOutputStream(toSock.getOutputStream());
-            out.writeObject(message);
+            if (outputStream == null) {
+                outputStream = new ObjectOutputStream(fromSock.getOutputStream());
+                outputStream.writeObject(message);
+            } else {
+                outputStream.writeObject(message);
+            }
             //out.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -93,8 +97,12 @@ public class SocketManager {
     public Object waitForMessage(Socket inSock) {
         Object message = null;
         try {
-            ObjectInputStream inputStream = new ObjectInputStream(inSock.getInputStream());
-            message = inputStream.readObject();
+            if (inputStream == null) {
+                inputStream = new ObjectInputStream(inSock.getInputStream());
+                message = inputStream.readObject();
+            } else {
+                message = inputStream.readObject();
+            }
             //inputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
