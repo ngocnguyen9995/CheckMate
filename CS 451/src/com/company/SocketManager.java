@@ -8,7 +8,7 @@
  * Kyle Eng
  */
 
-package com.company;
+//package com.company;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -28,7 +28,7 @@ public class SocketManager {
 
     public ServerSocket initServer() throws IOException{
         ServerSocket serverSocket = new ServerSocket(0);
-        serverSocket.setSoTimeout(50000);
+        serverSocket.setSoTimeout(20000);
         System.out.println("Host is listening on port " + serverSocket.getLocalPort());
         return serverSocket;
     }
@@ -48,27 +48,25 @@ public class SocketManager {
             // while loop for waiting
             // break to return control to main controller
             Scanner scan = new Scanner(System.in);
-            while(true) {
-                System.out.println("Do you wish to continue waiting or go back to main menu?");
-                System.out.println("Enter '1' to continue waiting or '2' to go back to main menu");
-                String userIn = scan.nextLine();
-                while (!isInt(userIn) || (userIn.length() != 1)) {
-                    System.out.println("Please type an integer, 1 or 2");
-                    scan = new Scanner(System.in);
-                    userIn = scan.nextLine();
-                }
-                int userInput = Integer.parseInt(userIn);
 
-                while ((userInput != 1) && (userInput != 2)) {
-                    System.out.println("Please enter '1' or '2' ");
-                    scan = new Scanner(System.in);
-                    userInput = scan.nextInt();
-                }
+            System.out.println("Do you wish to continue waiting or go back to main menu?");
+            System.out.println("Enter '1' to continue waiting or '2' to go back to main menu");
+            String userIn = scan.nextLine();
+            while (!isInt(userIn) || (userIn.length() != 1)) {
+                System.out.println("Please type an integer, 1 or 2");
+                scan = new Scanner(System.in);
+                userIn = scan.nextLine();
+            }
+            int userInput = Integer.parseInt(userIn);
 
-                if (userInput == 1) {
-                    SocketManager.listen(serverSocket);
-                }
-                break;
+            while ((userInput != 1) && (userInput != 2)) {
+                System.out.println("Please enter '1' or '2' ");
+                scan = new Scanner(System.in);
+                userInput = scan.nextInt();
+            }
+
+            if (userInput == 1) {
+                SocketManager.listen(serverSocket);
             }
         }
         return server;
