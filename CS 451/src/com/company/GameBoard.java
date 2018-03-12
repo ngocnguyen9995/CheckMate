@@ -9,10 +9,6 @@ public class GameBoard implements Serializable
     public int hostPieceCount = 12;
     public int clientPieceCount = 12;
 
-
-    public boolean noHostPieceLeft = false;
-    public boolean noClientPieceLeft = false;
-
     public GameBoard()
     {
         board = new Piece[ROW][COL];
@@ -28,7 +24,7 @@ public class GameBoard implements Serializable
                     else if (i % 2 == 0 && j % 2 == 0)
                         board[i][j] = new Piece(" ");
                     else
-                        board[i][j] = new Piece("O");
+                        board[i][j] = new Piece("o");
                 }
             }
             else if (i > 4)
@@ -40,7 +36,7 @@ public class GameBoard implements Serializable
                     else if (i % 2 == 0 && j % 2 == 0)
                         board[i][j] = new Piece(" ");
                     else
-                        board[i][j] = new Piece("X");
+                        board[i][j] = new Piece("x");
                 }
             }
 
@@ -72,42 +68,32 @@ public class GameBoard implements Serializable
     }
 
     // change to return String
-    public String displayBoard()
+    public void displayBoard()
     {
-        String out = "  ---------------------------------\n";
         System.out.println("  ---------------------------------");
         for (int i = 0; i < ROW; i++)
         {
-            out += i+1 + " | ";
             System.out.print(i+1 + " | ");
             for (int j = 0; j < COL; j++)
             {
                 //board[i][j] = "A";
-                out += board[i][j].getPieceName() + " | ";
                 System.out.print(board[i][j].getPieceName() + " | ");
             }
-            out += "\n";
             System.out.println();
         }
-        out += "  ---------------------------------\n";
         System.out.println("  ---------------------------------");
 
-        out += "    a   b   c   d   e   f   g   h ";
         System.out.println("    a   b   c   d   e   f   g   h ");
-        return out;
     }
 
     public void reduceCount(String piece) {
-        if (piece.compareTo("X") == 0) {
+        if (piece.compareToIgnoreCase("o") == 0) {
             if (clientPieceCount > 0)
                 clientPieceCount--;
-            else
-                noClientPieceLeft = true;
-        } else if (piece.compareTo("O") == 0) {
+        }
+        else if (piece.compareToIgnoreCase("x") == 0) {
             if (hostPieceCount > 0)
                 hostPieceCount--;
-            else
-                noHostPieceLeft = true;
         }
     }
 }

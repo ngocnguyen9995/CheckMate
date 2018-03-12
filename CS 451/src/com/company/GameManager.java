@@ -49,6 +49,18 @@ public class GameManager
         return temp;
     }
 
+    // convert from int to letter
+    public String intToLetter(int row, int col)
+    {
+        String result = "";
+
+        result += String.valueOf(row+1); // indices from 0->7 but row from 1->8
+        char b = (char)('a' + col); // indices from 0->7 but col from a->h = 0+97 -> 7+97
+        result += b;
+
+        return result;
+    }
+
 /***********************************************************************************************************************/
     public boolean isOccupied(int row, int col)
     {
@@ -60,7 +72,7 @@ public class GameManager
 
     public boolean isX(int row, int col)
     {
-        if (gameBoard.getPiece(row, col).getPieceName().equals("X"))
+        if (gameBoard.getPiece(row, col).getPieceName().equalsIgnoreCase("X"))
             return true;
         else
             return false;
@@ -68,7 +80,7 @@ public class GameManager
 
     public boolean isOnBoard(int row, int col)
     {
-        if (row <= GameBoard.ROW && col <= GameBoard.COL)
+        if ( row >= 0 && row < GameBoard.ROW && col >= 0 && col < GameBoard.COL) // row and col range from 0-7 bc they are indices
             return true;
         else
             return false;
@@ -88,13 +100,22 @@ public class GameManager
     {
         for (int i = 0; i < GameBoard.COL; i ++)
         {
-            if (gameBoard.getPiece(0,i).getPieceName().equals("X"))
+            if (gameBoard.getPiece(0,i).getPieceName().equals("x"))
             {
-                gameBoard.getPiece(0,i).setKing();
+                if ( ! gameBoard.getPiece(0,i).isKing() )
+                {
+                    gameBoard.getPiece(0,i).setKing("X");
+                    System.out.println( "x reaches the top row. x becomes King" );
+
+                }
             }
-            if (gameBoard.getPiece(7,i).getPieceName().equals("O"))
+            if (gameBoard.getPiece(7,i).getPieceName().equals("o"))
             {
-                gameBoard.getPiece(7,i).setKing();
+                if ( ! gameBoard.getPiece(7,i).isKing() )
+                {
+                    gameBoard.getPiece(7,i).setKing("O");
+                    System.out.println( "o reaches the bottom row. o becomes King" );
+                }
             }
         }
     }
@@ -107,12 +128,10 @@ public class GameManager
             return true;
         else if ( ! isOccupied(row, col) )
         {
-            System.out.println("No piece at the choosen position. Please try again");
             return false;
         }
         else
         {
-            System.out.println("You can't move a piece that is not yours. Please try again");
             return false;
         }
     }
@@ -187,7 +206,6 @@ public class GameManager
                 }
             }
         }
-        System.out.println("Invalid move!");
         return false;
     }
 /***********************************************************************************************************************/
@@ -196,17 +214,16 @@ public class GameManager
     {
         String current = gameBoard.getPiece(row, col).getPieceName();
 
-        if ( ! isOnBoard( row-1, col-1 ))
+        if ( ! isOnBoard( row-1, col-1 ) && ! isOnBoard( row-2, col-2 ) )
             return false;
 
         String upLeft = gameBoard.getPiece(row-1, col-1).getPieceName();
 
-        if ( current.compareTo(upLeft) != 0 && isOnBoard(row-2, col-2) && !isOccupied(row-2, col-2)) {
+        if ( isOccupied(row-1, col-1) && current.compareToIgnoreCase(upLeft) != 0 && isOnBoard(row-2, col-2) && !isOccupied(row-2, col-2)) {
             posUpLeft[0] = row-1;
             posUpLeft[1] = col-1;
             posUpLeft[2] = row-2;
             posUpLeft[3] = col-2;
-            System.out.println("Can jump up left!");
             return true;
         }
         return false;
@@ -216,17 +233,16 @@ public class GameManager
     {
         String current = gameBoard.getPiece(row, col).getPieceName();
 
-        if ( ! isOnBoard( row-1, col+1 ))
+        if ( ! isOnBoard( row-1, col+1 ) && ! isOnBoard( row-2, col+2 ) )
             return false;
 
-        String upLeft = gameBoard.getPiece(row-1, col+1).getPieceName();
+        String upRight = gameBoard.getPiece(row-1, col+1).getPieceName();
 
-        if ( current.compareTo(upLeft) != 0 && isOnBoard(row-2, col+2) && !isOccupied(row-2, col+2)) {
+        if ( isOccupied(row-1, col+1) && current.compareToIgnoreCase(upRight) != 0 && isOnBoard(row-2, col+2) && !isOccupied(row-2, col+2)) {
             posUpRight[0] = row-1;
             posUpRight[1] = col+1;
             posUpRight[2] = row-2;
             posUpRight[3] = col+2;
-            System.out.println("Can jump up right!");
             return true;
         }
         return false;
@@ -236,17 +252,17 @@ public class GameManager
     {
         String current = gameBoard.getPiece(row, col).getPieceName();
 
-        if ( ! isOnBoard( row+1, col-1 ))
+        if ( ! isOnBoard( row+1, col-1 ) && ! isOnBoard( row+2, col-2 ) )
             return false;
 
-        String upLeft = gameBoard.getPiece(row+1, col-1).getPieceName();
+        String DownLeft = gameBoard.getPiece(row+1, col-1).getPieceName();
 
-        if ( current.compareTo(upLeft) != 0 && isOnBoard(row+2, col-2) && !isOccupied(row+2, col-2)) {
+        if ( isOccupied(row+1, col-1) && current.compareToIgnoreCase(DownLeft) != 0 && isOnBoard(row+2, col-2) && !isOccupied(row+2, col-2)) {
             posDownLeft[0] = row+1;
             posDownLeft[1] = col-1;
             posDownLeft[2] = row+2;
             posDownLeft[3] = col-2;
-            System.out.println("Can jump down left!");
+            //System.out.println("Can jump down left!");
             return true;
         }
         return false;
@@ -256,17 +272,17 @@ public class GameManager
     {
         String current = gameBoard.getPiece(row, col).getPieceName();
 
-        if ( ! isOnBoard( row+1, col+1 ))
+        if ( ! isOnBoard( row+1, col+1 ) && ! isOnBoard( row+2, col+2 ) )
             return false;
 
-        String upLeft = gameBoard.getPiece(row+1, col+1).getPieceName();
+        String downRight = gameBoard.getPiece(row+1, col+1).getPieceName();
 
-        if ( current.compareTo(upLeft) != 0 && isOnBoard(row+2, col+2) && !isOccupied(row+2, col+2)) {
+        if ( isOccupied(row+1, col+1) && current.compareToIgnoreCase(downRight) != 0 && isOnBoard(row+2, col+2) && !isOccupied(row+2, col+2)) {
             posDownRight[0] = row+1;
             posDownRight[1] = col+1;
             posDownRight[2] = row+2;
             posDownRight[3] = col+2;
-            System.out.println("Can jump down right!");
+            //System.out.println("Can jump down right!");
             return true;
         }
         return false;
@@ -274,78 +290,57 @@ public class GameManager
 
     public boolean canJump(int row, int col)
     {
-        //int[] pos = new int[4];
+        boolean jumpUpLeft = canJumpUpLeft(row, col);
+        boolean jumpUpRight = canJumpUpRight(row, col);
+        boolean jumpDownLeft = canJumpDownLeft(row, col);
+        boolean jumpDownRight = canJumpDownRight(row, col);
+
         if ( isKing(row, col) ) {
-            if (canJumpUpLeft(row, col)) {
+            if ( validatePiece(row, col) && isOccupied(row, col) && (jumpUpLeft || jumpUpRight || jumpDownLeft || jumpDownRight))
                 return true;
-            } if (canJumpUpRight(row, col)) {
-                return true;
-            } if (canJumpDownLeft(row, col)) {
-                return true;
-            } if (canJumpDownRight(row, col)) {
-                return true;
-            }
         }
         else
         {
             if ( isX(row, col) )
             {
-                if (canJumpUpLeft(row, col)) {
+                if (  validatePiece(row, col) && isOccupied(row, col) && ( jumpUpLeft || jumpUpRight ))
                     return true;
-                } if (canJumpUpRight(row, col)) {
-                    return true;
-                }
             }
             else {
-                if (canJumpDownLeft(row, col)) {
+                if (  validatePiece(row, col) && isOccupied(row, col) && ( jumpDownLeft || jumpDownRight ))
                     return true;
-                } if (canJumpDownRight(row, col)) {
-                    return true;
-                }
             }
         }
         return false;
     }
 
-    public GameBoard jump(int row, int col, int newRow, int newCol)
+    public boolean jump(int row, int col, int newRow, int newCol)
     {
         boolean isUpdated = false;
 
-        if ( ! posUpLeft.equals(null) )
+        if ( newRow == posUpLeft[2] && newCol == posUpLeft[3] )
         {
-            if ( newRow == posUpLeft[2] && newCol == posUpLeft[3] )
-            {
-                gameBoard.resetPiece(posUpLeft[0], posUpLeft[1]);
-                updateBoard(row, col, newRow, newCol);
-                isUpdated = true;
-            }
+            gameBoard.resetPiece(posUpLeft[0], posUpLeft[1]);
+            updateBoard(row, col, newRow, newCol);
+            isUpdated = true;
         }
-        else if ( ! posUpRight.equals(null) )
+        else if ( newRow == posUpRight[2] && newCol == posUpRight[3] )
         {
-            if ( newRow == posUpRight[2] && newCol == posUpRight[3] )
-            {
-                gameBoard.resetPiece(posUpRight[0], posUpRight[1]);
-                updateBoard(row, col, newRow, newCol);
-                isUpdated = true;
-            }
+            gameBoard.resetPiece(posUpRight[0], posUpRight[1]);
+            updateBoard(row, col, newRow, newCol);
+            isUpdated = true;
         }
-        else if ( ! posDownLeft.equals(null) )
+        else if ( newRow == posDownLeft[2] && newCol == posDownLeft[3] )
         {
-            if ( newRow == posDownLeft[2] && newCol == posDownLeft[3] )
-            {
-                gameBoard.resetPiece(posDownLeft[0], posDownLeft[1]);
-                updateBoard(row, col, newRow, newCol);
-                isUpdated = true;
-            }
+            gameBoard.resetPiece(posDownLeft[0], posDownLeft[1]);
+            updateBoard(row, col, newRow, newCol);
+            isUpdated = true;
         }
-        else if ( ! posDownRight.equals(null) )
+        else if ( newRow == posDownRight[2] && newCol == posDownRight[3] )
         {
-            if ( newRow == posDownRight[2] && newCol == posDownRight[3] )
-            {
-                gameBoard.resetPiece(posDownRight[0], posDownRight[1]);
-                updateBoard(row, col, newRow, newCol);
-                isUpdated = true;
-            }
+            gameBoard.resetPiece(posDownRight[0], posDownRight[1]);
+            updateBoard(row, col, newRow, newCol);
+            isUpdated = true;
         }
 
         posUpLeft = new int[4];
@@ -355,39 +350,65 @@ public class GameManager
 
         if ( isUpdated )
         {
-            if (isX(row, col))
-                gameBoard.reduceCount("X");
-            else
+            if (isX(newRow, newCol))
                 gameBoard.reduceCount("O");
-            return gameBoard;
+            else
+                gameBoard.reduceCount("X");
+            return true;
         }
-        return gameBoard;
+        return false;
 
     }
 
 /***********************************************************************************************************************/
 
-    public GameBoard updateBoard(int prevRow, int prevCol, int newRow, int newCol)
+    public void updateBoard(int prevRow, int prevCol, int newRow, int newCol)
     {
         gameBoard.movePiece(prevRow, prevCol, newRow, newCol);
+        searchKing();
         gameBoard.displayBoard();
-        return gameBoard;
+    }
+
+    public void printPiecesLeft()
+    {
+        System.out.println("Number of pieces left for Host: " + gameBoard.hostPieceCount);
+        System.out.println("Number of pieces left for Client: " + gameBoard.clientPieceCount);
     }
 
     public boolean gameOver()
     {
-        if ( gameBoard.noHostPieceLeft )
+        if ( gameBoard.hostPieceCount == 0 )
         {
-            System.out.println("X loses");
-            System.out.println("O wins");
+            System.out.println("x loses");
+            System.out.println("o wins");
             return true;
         }
-        else if ( gameBoard.noClientPieceLeft )
+        else if ( gameBoard.clientPieceCount == 0 )
         {
-            System.out.println("O loses");
-            System.out.println("X wins");
+            System.out.println("o loses");
+            System.out.println("x wins");
             return true;
         }
-        return false;
+        else
+            return false;
+    }
+
+    public boolean searchJump()
+    {
+        String pos;
+        boolean canJump = false;
+        for (int r = 0; r < gameBoard.ROW; r++)
+        {
+            for (int c = 0; c < gameBoard.COL; c++)
+            {
+                if ( canJump(r,c) )
+                {
+                    pos = intToLetter(r,c);
+                    System.out.println( gameBoard.getPiece(r,c).getPieceName() + " at position " + pos + " can jump.");
+                    canJump = true;
+                }
+            }
+        }
+        return canJump;
     }
 }

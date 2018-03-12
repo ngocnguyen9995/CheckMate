@@ -41,55 +41,106 @@ public class Client extends Host {
     @Override
     public void doTurn() {
         int[] pieces;
+        String[] canJumpPieces;
+        int row, col, newRow, newCol;
+        Scanner sc = new Scanner(System.in);
+        String input, position;
+        gameManager.isHost = false;
 
         board.displayBoard();
 
         while(true) {
-            System.out.print("Choose a piece: ");
-            Scanner sc = new Scanner(System.in);
-            String input = sc.nextLine();
+            // jump
+            if(gameManager.searchJump()) { //searchJump return true if there is jump
 
-            pieces = gameManager.checkInput(input);
+                System.out.print("Choose a piece to jump: ");
+                input = sc.nextLine();
 
-            if (pieces.length == 2) {
+                pieces = gameManager.checkInput(input);
 
-                int row = pieces[0];
-                int col = pieces[1];
+                if (pieces.length == 2) {
+                    row = pieces[0];
+                    col = pieces[1];
 
-                gameManager.isHost = false;
+                    if(gameManager.canJump(row,col)) {
+                        while(gameManager.canJump(row,col)) {
+                            System.out.print("Choose a position to jump to: ");
+                            position = sc.nextLine();
 
-                if (gameManager.validatePiece(row, col)) {
-                    System.out.print("Choose a position to move: ");
-                    String position = sc.nextLine();
+                            pieces = gameManager.checkInput(position);
 
-                    pieces = gameManager.checkInput(position);
+                            if (pieces.length == 2) {
+                                newRow = pieces[0];
+                                newCol = pieces[1];
 
-                    if(pieces.length == 2) {
+                                if (gameManager.jump(row, col, newRow, newCol)) {
 
-                        int newRow = pieces[0];
-                        int newCol = pieces[1];
+                                    board = gameManager.getBoard();
+                                    gameManager.printPiecesLeft();
+                                    row = newRow;
+                                    col = newCol;
 
-                        if (gameManager.validateMove(row, col, newRow, newCol)) {
+                                } else {
+                                    System.out.println("Invalid jump position. Please choose again");
+                                }
+                            } else {
+                                System.out.println("Invalid format of input. Please choose again");
+                            }
+                        }
+                        break;
+                    }
+                    else {
+                        System.out.println("Invalid piece. Please choose again");
+                    }
+                }
+                else {
+                    System.out.println("Invalid format of input. Please choose again");
+                }
+            }
+            // normal move
+            else {
+                System.out.print("Choose a piece to move: ");
+                input = sc.nextLine();
 
-                            board = gameManager.updateBoard(row, col, newRow, newCol);
+                pieces = gameManager.checkInput(input);
 
-                            gameManager.isHost = false;
-                            break;
+                if (pieces.length == 2) {
+                    row = pieces[0];
+                    col = pieces[1];
+
+                    if(gameManager.validatePiece(row, col)) {
+
+                        System.out.print("Choose a position to move into: ");
+                        position = sc.nextLine();
+
+                        pieces = gameManager.checkInput(position);
+
+                        if (pieces.length == 2) {
+                            newRow = pieces[0];
+                            newCol = pieces[1];
+
+                            if (gameManager.validateMove(row, col, newRow, newCol)) {
+
+                                gameManager.updateBoard(row, col, newRow, newCol);
+                                board = gameManager.getBoard();
+                                gameManager.printPiecesLeft();
+                                break;
+                            }
+                            else {
+                                System.out.println("Invalid move. Please choose again");
+                            }
                         }
                         else {
-                            System.out.println("Invalid position. Please choose again");
+                            System.out.println("Invalid format of input. Please choose again");
                         }
                     }
                     else {
-                        System.out.println("Invalid format of input. Please choose again");
+                        System.out.println("Invalid piece. Please choose again");
                     }
                 }
-                else{
-                    System.out.println("Invalid piece. Please choose again");
+                else {
+                    System.out.println("Invalid format of input. Please choose again");
                 }
-            }
-            else {
-                System.out.println("Invalid format of input. Please choose again");
             }
         }
     }
@@ -101,7 +152,8 @@ public class Client extends Host {
         initSession();
 
         board.displayBoard();
-        while(!gameManager.gameOver()) {
+
+        while(gameManager.gameOver() != true) {
 
             // read board
             board = (GameBoard) socketManager.waitForMessage(client);
@@ -111,13 +163,20 @@ public class Client extends Host {
                 break;
             }
 
-            System.out.println("\nHost moved.");
+            System.out.println("\nHost moved.\n");
+
             gameManager.readBoard(board);
+            board = gameManager.getBoard();
+            gameManager.printPiecesLeft();
 
-            doTurn();
-            // send board
-            socketManager.sendMessage(client, board);
+            if(gameManager.gameOver() == true) {
+                System.out.println("Game over");
+                break;
+            }
+            else {
+                doTurn();
+                socketManager.sendMessage(client, board);
+            }
         }
-
     }
 }

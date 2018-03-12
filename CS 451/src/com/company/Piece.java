@@ -11,14 +11,20 @@ public class Piece implements Serializable
         isKing = false;
     }
 
+    public void setPieceName(String name)
+    {
+        this.name = name;
+    }
+
     public String getPieceName()
     {
         return name;
     }
 
-    public void setKing()
+    public void setKing(String name_)
     {
         isKing = true;
+        setPieceName(name_);
     }
 
     public boolean isKing()
