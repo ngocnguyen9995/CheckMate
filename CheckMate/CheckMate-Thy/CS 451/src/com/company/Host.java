@@ -22,6 +22,7 @@ public class Host {
             ip = InetAddress.getLocalHost();
             serverSocket = socketManager.initServer(7896);
             System.out.println("Your host ip address: " + ip);
+            System.out.println("Your host port number: " + 7896);
             server = socketManager.listen(serverSocket);
         } catch(IOException e) {
             e.printStackTrace();

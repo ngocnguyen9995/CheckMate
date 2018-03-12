@@ -8,7 +8,7 @@ public class MainController {
     private static final  String[] CONNECTIONMENU = {"Host A Game", "Connect To A Host", "Back To Main Menu"};
 
 
-    public static void main() {
+    public static void main(String[] args) {
         // Start with main menu
         mainMenuScreen();
     }
