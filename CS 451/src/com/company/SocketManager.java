@@ -81,7 +81,7 @@ public class SocketManager {
         return (socket.isConnected());
     }
 
-    public void sendMessage(Socket fromSock, String[][] message) {
+    public void sendMessage(Socket fromSock, GameBoard message) {
         try {
             if (outputStream == null) {
                 outputStream = new ObjectOutputStream(fromSock.getOutputStream());
