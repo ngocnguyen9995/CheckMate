@@ -1,0 +1,4 @@
+Download Project files at https://github.com/ngocnguyen9995/CheckMate
+Make sure JRE is installed.
+Export the project in JAR
+Open up CMD terminal, run this command: "java -jar grp2CheckMate.jar".
